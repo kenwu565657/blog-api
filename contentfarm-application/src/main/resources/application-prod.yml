@@ -26,6 +26,7 @@ file:
         accessKey: ${AWS_S3_ACCESS_KEY}
         secretKey: ${AWS_S3_SECRET_KEY}
         region: ${AWS_S3_REGION}
+        endpoint: ${AWS_S3_ENDPOINT:}
 
 elasticsearch:
   url: ${ELASTICSEARCH_URL}

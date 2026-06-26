@@ -7,6 +7,7 @@ public class AmazonS3Properties {
     private String accessKey;
     private String secretKey;
     private String region;
+    private String endpoint;
 
     public String getSecretKey() {
         return secretKey;
@@ -30,5 +31,13 @@ public class AmazonS3Properties {
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 }

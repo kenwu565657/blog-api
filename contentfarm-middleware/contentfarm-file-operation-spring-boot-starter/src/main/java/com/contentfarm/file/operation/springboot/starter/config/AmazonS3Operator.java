@@ -9,7 +9,9 @@ import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -20,6 +22,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.waiters.S3Waiter;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
@@ -33,15 +36,34 @@ public class AmazonS3Operator implements AmazonS3Operation {
     public AmazonS3Operator(AmazonS3Properties amazonS3Properties) {
         AwsBasicCredentials awsBasicCredentials = AwsBasicCredentials.create(amazonS3Properties.getAccessKey(), amazonS3Properties.getSecretKey());
         Region region = Region.of(amazonS3Properties.getRegion());
-        this.s3Client = S3Client.builder()
+        S3ClientBuilder s3ClientBuilder = S3Client.builder()
+                .region(region)
+                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials));
+        S3AsyncClientBuilder s3AsyncClientBuilder = S3AsyncClient.builder()
                 .region(region)
                 .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
-                .build();
-        this.s3AsyncClient = S3AsyncClient.builder()
-                .region(region)
-                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
-                .multipartEnabled(true)
-                .build();
+                .multipartEnabled(true);
+        applyEndpointOverride(amazonS3Properties, s3ClientBuilder, s3AsyncClientBuilder);
+        this.s3Client = s3ClientBuilder.build();
+        this.s3AsyncClient = s3AsyncClientBuilder.build();
+    }
+
+    private static void applyEndpointOverride(
+            AmazonS3Properties amazonS3Properties,
+            S3ClientBuilder s3ClientBuilder,
+            S3AsyncClientBuilder s3AsyncClientBuilder
+    ) {
+        String endpoint = amazonS3Properties.getEndpoint();
+        if (endpoint == null || endpoint.isBlank()) {
+            return;
+        }
+        URI endpointUri = URI.create(endpoint);
+        s3ClientBuilder
+                .endpointOverride(endpointUri)
+                .forcePathStyle(true);
+        s3AsyncClientBuilder
+                .endpointOverride(endpointUri)
+                .forcePathStyle(true);
     }
 
     @Override

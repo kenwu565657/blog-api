@@ -1,0 +1,23 @@
+services:
+  localstack:
+    container_name: ${PROJECT_NAME}-localstack
+    image: localstack/localstack:${LOCALSTACK_VERSION}
+    restart: always
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3
+      DEBUG: 0
+      AWS_DEFAULT_REGION: ${AWS_S3_REGION}
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - ../localstack/init/ready.d:/etc/localstack/init/ready.d
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  localstack-data:

@@ -8,6 +8,17 @@ This project aim to practice DDD and Hexagon Architecture.
 # Add New Service Using Hexagon Architecture Concept
 Using relational Database as an example. There are 3 Steps.
 
+# How To Run
+```sh
+cd docker-compose
+
+# Full Backend
+docker-compose up -d
+
+# Infra only
+docker compose up postgres elasticsearch localstack -d
+```
+
 ## Step1: Define interface(Input or Output port) in domain layer
 ```java
 // contentfarm-domain/src/main/java/com/contentfarm/outputport/blogpost/persistence/IBlogPostPersistenceCommandService.java
