@@ -14,6 +14,11 @@ spring:
         jwt:
           issuer-uri: http://localhost:80/api
 
+contentfarm:
+  oauth:
+    redirect-uri: http://127.0.0.1:8080/login/oauth2/code/contentfarm-admin
+    post-logout-redirect-uri: http://127.0.0.1:8080/
+
 file:
   operation:
     aws:

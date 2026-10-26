@@ -3,6 +3,8 @@ package com.contentfarm.file.operation.springboot.starter.config;
 import com.contentfarm.file.operation.springboot.starter.exception.FileOperationException;
 import com.contentfarm.file.operation.springboot.starter.pojo.AsyncOperationResult;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
@@ -34,18 +36,28 @@ public class AmazonS3Operator implements AmazonS3Operation {
     private final S3AsyncClient s3AsyncClient;
 
     public AmazonS3Operator(AmazonS3Properties amazonS3Properties) {
-        AwsBasicCredentials awsBasicCredentials = AwsBasicCredentials.create(amazonS3Properties.getAccessKey(), amazonS3Properties.getSecretKey());
         Region region = Region.of(amazonS3Properties.getRegion());
+        AwsCredentialsProvider credentialsProvider = resolveCredentialsProvider(amazonS3Properties);
         S3ClientBuilder s3ClientBuilder = S3Client.builder()
                 .region(region)
-                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials));
+                .credentialsProvider(credentialsProvider);
         S3AsyncClientBuilder s3AsyncClientBuilder = S3AsyncClient.builder()
                 .region(region)
-                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
+                .credentialsProvider(credentialsProvider)
                 .multipartEnabled(true);
         applyEndpointOverride(amazonS3Properties, s3ClientBuilder, s3AsyncClientBuilder);
         this.s3Client = s3ClientBuilder.build();
         this.s3AsyncClient = s3AsyncClientBuilder.build();
+    }
+
+    private static AwsCredentialsProvider resolveCredentialsProvider(AmazonS3Properties amazonS3Properties) {
+        String accessKey = amazonS3Properties.getAccessKey();
+        if (accessKey == null || accessKey.isBlank()) {
+            return DefaultCredentialsProvider.create();
+        }
+        return StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(accessKey, amazonS3Properties.getSecretKey())
+        );
     }
 
     private static void applyEndpointOverride(

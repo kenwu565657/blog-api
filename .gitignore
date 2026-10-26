@@ -41,3 +41,4 @@ build/
 **/.s3.secret.*.env
 **/.*.secret.env
 **/secret.env
+**/aws/deploy.env

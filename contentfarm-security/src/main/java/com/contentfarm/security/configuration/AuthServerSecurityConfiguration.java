@@ -1,11 +1,11 @@
 package com.contentfarm.security.configuration;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -29,14 +29,18 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.text.MessageFormat;
 import java.util.UUID;
 
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
 public class AuthServerSecurityConfiguration {
+
+    @Value("${contentfarm.oauth.redirect-uri}")
+    private String oauthRedirectUri;
+
+    @Value("${contentfarm.oauth.post-logout-redirect-uri}")
+    private String oauthPostLogoutRedirectUri;
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -89,8 +93,8 @@ public class AuthServerSecurityConfiguration {
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .redirectUri("http://127.0.0.1:8080/login/oauth2/code/contentfarm-admin")
-                .postLogoutRedirectUri("http://127.0.0.1:8080/")
+                .redirectUri(oauthRedirectUri)
+                .postLogoutRedirectUri(oauthPostLogoutRedirectUri)
                 .scope(OidcScopes.OPENID)
                 .scope("admin.read")
                 .scope("admin.write")
